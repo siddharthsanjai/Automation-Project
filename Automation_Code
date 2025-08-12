@@ -1,1 +1,190 @@
+#include<LiquidCrystal.h>  
+#include <SimpleDHT.h>
 
+int pinDHT11 = A0;
+SimpleDHT11 dht11(pinDHT11);
+
+int con=110;
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+String voice;
+int
+led1 = 7, //Connect LED 1 To Pin #7
+led2 = 8, //Connect LED 2 To Pin #8
+led3 = 9, //Connect LED 3 To Pin #9
+led4 = 10, //Connect LED 4 To Pin #10 
+led5 = 13; //Connect LED 5 To Pin #13
+//--------------------------Call A Function-------------------------------// 
+void allon(){
+     digitalWrite(led1, HIGH);
+     digitalWrite(led2, HIGH);
+     digitalWrite(led3, HIGH);
+     digitalWrite(led4, HIGH);
+     digitalWrite(led5, HIGH);
+     lcd.clear();
+     lcd.print("ALL LIGHTS ON");
+     delay(3000);
+}
+void alloff(){
+     digitalWrite(led1, LOW);
+     digitalWrite(led2, LOW);
+     digitalWrite(led3, LOW);
+     digitalWrite(led4, LOW);
+     digitalWrite(led5, LOW);
+     lcd.clear();
+     lcd.print("ALL LIGHTS OFF");
+     delay(3000);
+     
+}
+
+void temperature() 
+{
+//DTH
+  byte temperature = 0;
+  byte humidity = 0;
+  int err = SimpleDHTErrSuccess;
+  if ((err = dht11.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess)
+  {
+    Serial.print("Read DHT11 failed, err=");
+    Serial.println(err);
+    delay(1000);
+    return;
+  }
+  
+  Serial.print((int)temperature); Serial.print(" °C, "); 
+  Serial.print((int)humidity); Serial.println(" H");
+  
+  // DHT11 sampling rate is 1HZ.
+  delay(1000);
+ lcd.clear();
+ lcd.print("Temp & Humi is");
+ delay(1000);
+ lcd.setCursor(0,1);
+ lcd.print((int)temperature);
+ lcd.print("C, ");
+ lcd.setCursor(5,1);
+ lcd.print((int)humidity);
+ lcd.print("H, ");
+ delay(5000);
+  
+}
+//-----------------------------------------------------------------------// 
+void setup() 
+{
+  Serial.println("Temperature and humidity data");
+  Serial.begin(9600);
+  analogWrite(6,con);
+  lcd.begin(16,2);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("WELCOME");
+  delay(5000);
+
+
+ lcd.clear();
+  lcd.print(" Connect your device");
+  for(int i=0; i<22; i++)
+  {
+    lcd.scrollDisplayLeft();
+    delay(700);
+    }
+  
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+  pinMode(led5, OUTPUT);
+}
+//-----------------------------------------------------------------------// 
+void loop() 
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("LISTENING.....");
+    delay(2000);
+ 
+ 
+  while (Serial.available()){  //Check if there is an available byte to read
+  delay(10); //Delay added to make thing stable
+  char c = Serial.read(); //Conduct a serial read
+  if (c == '#') {break;} //Exit the loop when the # is detected after the word
+  voice += c; //Shorthand for voice = voice + c
+  } 
+  if (voice.length() > 0) {
+    Serial.println(voice);
+//-----------------------------------------------------------------------//   
+  //----------Control Multiple Pins/ LEDs----------// 
+       if(voice == "*all on") {allon();}  //Turn Off All Pins (Call Function)
+  else if(voice == "*all off"){alloff();} //Turn On  All Pins (Call Function)
+  else if(voice == "*temperature"){temperature();} //temperature
+ 
+  //----------Turn On One-By-One----------//
+  else if(voice == "*TV on")                  {
+                                              digitalWrite(led1, HIGH); 
+                                              lcd.clear();
+                                              lcd.print("TV ON");
+                                              delay(3000);
+                                              }
+  else if(voice == "*fan on")                 {
+                                              digitalWrite(led2, HIGH); 
+                                              lcd.print("fan on");
+                                              lcd.clear();
+                                              lcd.print("fan on");
+                                              delay(3000);
+                                              }
+  else if(voice == "*computer on")            {
+                                              digitalWrite(led3, HIGH);
+                                              lcd.print("computer on");
+                                              lcd.clear();
+                                              lcd.print("computer on");
+                                              delay(3000);
+                                              }
+  else if(voice == "*bedroom lights on")      {    
+                                              digitalWrite(led4, HIGH);
+                                              lcd.print("bedroom lights on");
+                                              lcd.clear();
+                                              lcd.print("bedroom lights on");
+                                              delay(3000);
+                                              }
+  else if(voice == "*bathroom lights on")     {   
+                                              digitalWrite(led5, HIGH);
+                                              lcd.print("bathroom lights on");
+                                              lcd.clear();
+                                              lcd.print("bathroom lights on");
+                                              delay(3000);
+                                              }
+  //----------Turn Off One-By-One----------//
+  else if(voice == "*TV off")                 {
+                                              digitalWrite(led1, LOW);  
+                                              lcd.clear();
+                                              lcd.print("TV OFF");
+                                              delay(3000);
+                                              }
+  else if(voice == "*fan off")                {
+                                              digitalWrite(led2, LOW);
+                                              lcd.clear();
+                                              lcd.print("FAN OFF");
+                                              delay(3000);
+                                              }
+  else if(voice == "*computer off") {
+                                              digitalWrite(led3, LOW);
+                                              lcd.clear();
+                                              lcd.print("COMPUTER OFF");
+                                              delay(3000);
+                                              }
+  else if(voice == "*bedroom lights off")     {
+                                              digitalWrite(led4, LOW);
+                                              lcd.clear();
+                                              lcd.print("BEDROOM LIGHT OFF");
+                                              delay(3000);
+                                              }
+  else if(voice == "*bathroom lights off")    {
+                                              digitalWrite(led5, LOW); 
+                                              lcd.clear();
+                                              lcd.print("BATHROOM LIGHTS OFF");
+                                              delay(3000);
+                                              }
+//-----------------------------------------------------------------------// 
+voice="";
+}
+} //Reset the variable after initiating
